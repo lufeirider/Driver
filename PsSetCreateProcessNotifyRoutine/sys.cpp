@@ -40,7 +40,7 @@ PDRIVER_OBJECT pdoGlobalDrvObj = 0;
 /**********************************************************************************************************************************/
 PVOID isWait = NULL;
 PVOID inputBuffer;
-char outString[255] = "test";
+char outString[255] = "";
 char* processString;
 /**********************************************************************************************************************************/
 char* GetProcessName(ULONG dwPid)  
