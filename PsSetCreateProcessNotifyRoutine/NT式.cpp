@@ -4,14 +4,14 @@
 
 #define Main_CTL_CODE CTL_CODE(FILE_DEVICE_UNKNOWN,0x800,METHOD_BUFFERED,FILE_ANY_ACCESS)
 #define Flag_CTL_CODE CTL_CODE(FILE_DEVICE_UNKNOWN,0x801,METHOD_BUFFERED,FILE_ANY_ACCESS)
-DWORD BytesReturned;
-char debugString[255]="";
-DWORD dwRtn;
+DWORD dwReturned;
+char szDebugString[255]="";
+DWORD dwErrorCode;
 void ColseService(SC_HANDLE hSeriverMgr,SC_HANDLE hSeriverDDK)
 {
-	dwRtn = GetLastError();
-	sprintf(debugString,"error code = %d",dwRtn);
-	MessageBox(NULL,debugString,"failed!",NULL);
+	dwErrorCode = GetLastError();
+	sprintf(szDebugString,"error code = %d",dwErrorCode);
+	MessageBox(NULL,szDebugString,"failed!",NULL);
 	if(hSeriverDDK)
 	{
 		CloseServiceHandle(hSeriverDDK);
@@ -23,7 +23,7 @@ void ColseService(SC_HANDLE hSeriverMgr,SC_HANDLE hSeriverDDK)
 }
 
 //服务的名字 sys的路径
-void LoadDriver(char* lpszDriverName,char* lpszDriverImagePath)
+void LoadDriver(char* szDriverName,char* szDriverImagePath)
 {
 	SC_HANDLE hSeriverMgr=NULL;
 	SC_HANDLE hSeriverDDK=NULL;
@@ -38,13 +38,13 @@ void LoadDriver(char* lpszDriverName,char* lpszDriverImagePath)
 	//创建驱动对应的服务
 	hSeriverDDK=CreateService(
 				  hSeriverMgr,//服务管理器句柄
-		          lpszDriverName,//驱动文件的注册表名
-				  lpszDriverName,//注册表显示文件名
+		          szDriverName,//驱动文件的注册表名
+				  szDriverName,//注册表显示文件名
 				  SERVICE_ALL_ACCESS,//加载驱动程序的访问权限
 				  SERVICE_KERNEL_DRIVER,//表示加载的服务是驱动程序
 				  SERVICE_DEMAND_START,//注册表驱动程序的start值
 				  SERVICE_ERROR_IGNORE,//注册表驱动程序的ErrorControl的值
-				  lpszDriverImagePath,//注册表驱动程序的ImagePath的路径
+				  szDriverImagePath,//注册表驱动程序的ImagePath的路径
 				  NULL,
 				  NULL,
 				  NULL,
@@ -54,11 +54,11 @@ void LoadDriver(char* lpszDriverName,char* lpszDriverImagePath)
 				);
 	if(hSeriverDDK==NULL)
 	{
-		dwRtn = GetLastError();
-		if(dwRtn==ERROR_SERVICE_EXISTS)
+		dwErrorCode = GetLastError();
+		if(dwErrorCode==ERROR_SERVICE_EXISTS)
 		{
 			//服务已经创建，只需要打开就可以了
-			hSeriverDDK = OpenService(hSeriverMgr,lpszDriverName,SERVICE_ALL_ACCESS);
+			hSeriverDDK = OpenService(hSeriverMgr,szDriverName,SERVICE_ALL_ACCESS);
 			if(hSeriverDDK==NULL)
 			{
 				ColseService(hSeriverMgr,hSeriverDDK);
@@ -73,11 +73,11 @@ void LoadDriver(char* lpszDriverName,char* lpszDriverImagePath)
 	}
 
 	//开启此服务
-	dwRtn = StartService(hSeriverDDK,NULL,NULL);
-	if(!dwRtn)//若不成功
+	dwErrorCode = StartService(hSeriverDDK,NULL,NULL);
+	if(!dwErrorCode)//若不成功
 	{
-		dwRtn = GetLastError();
-		if(dwRtn=!ERROR_SERVICE_ALREADY_RUNNING)
+		dwErrorCode = GetLastError();
+		if(dwErrorCode=!ERROR_SERVICE_ALREADY_RUNNING)
 		{
 			//原因不是别挂起或已经运行
 			ColseService(hSeriverMgr,hSeriverDDK);
@@ -130,7 +130,7 @@ void show(HANDLE hDevice)
 					0,           //输入缓冲区大小
 					&OutBuffer, //输出缓冲区
 					255,           //输出缓冲区大小
-					&BytesReturned, //返回实际字节数
+					&dwReturned, //返回实际字节数
 					NULL);
 	printf(OutBuffer);
 }
@@ -162,7 +162,7 @@ int main(int argc, char* argv[])
 					4,           //输入缓冲区大小
 					NULL, //输出缓冲区
 					0,           //输出缓冲区大小
-					&BytesReturned, //返回实际字节数
+					&dwReturned, //返回实际字节数
 					NULL);
 
 	while(1)
